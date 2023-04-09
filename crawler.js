@@ -1,8 +1,12 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 
+const TurndownService = require("turndown");
+const turndownService = new TurndownService();
+
+
 const startUrls = ["https://developer.vonage.com/en/voice/voice-api/overview"];
-const path = __dirname + "/docs/";
+const path = __dirname + "/docs/markdown/";
 
 const xpath =
   '//*[@id="single-spa-application:en-dev-portal"]/div/div/div/div/div[2]';
@@ -10,14 +14,12 @@ const xpath =
 //This will save our history, so we don't process a page multiple times
 const history = [];
 
-//Writes the page out to a text file
-async function savePageAsText(url, page) {
-  const textContent = await page.evaluate(() => {
-    return document.documentElement.innerText;
-  });
-
-  const fileName = url.replace(/https?:\/\/|\/|www\./g, "") + ".txt";
-  fs.writeFileSync(path + fileName, textContent);
+async function savePageAsText(url, content) {
+  const fileName = url.replace(/https?:\/\/|\/|www\./g, '') + '.md';
+  
+  const markdown = turndownService.turndown(content);
+    
+  fs.writeFileSync(path + fileName, markdown);
 }
 
 //Recursive function that crawls through all of the links on a page
@@ -45,11 +47,13 @@ async function crawl(url, browser) {
 
   console.log(`Links: ${links}`);
 
-  await savePageAsText(url, page);
+  await savePageAsText(url, content);
 
   // Close the page
   await page.close();
 
+
+  
   // Recursively crawl the extracted links
   for (const link of links) {
 
@@ -67,6 +71,7 @@ async function crawl(url, browser) {
       i++;
     }
   }
+  
 }
 
 (async () => {
