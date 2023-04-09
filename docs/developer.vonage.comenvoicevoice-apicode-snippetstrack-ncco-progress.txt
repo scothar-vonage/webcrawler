@@ -1,0 +1,114 @@
+Use Cases
+Documentation
+SDKs & Tools
+Community
+Blog
+API Dashboard
+Vonage.com
+Pricing
+Support
+English
+中文
+日本語
+My profile
+My dashboard
+Log out
+Voice
+Voice API
+Overview
+Concepts
+Guides
+Code Snippets
+Before you begin
+Make an outbound call with an NCCO
+Connect an inbound call
+Download a recording
+Earmuff a call
+Handle user input with ASR
+Handle user input with DTMF
+Connect callers into a conference
+Make an outbound call
+Mute a call
+Play an audio stream into a call
+Play DTMF into a call
+Play text-to-speech into a call
+Receive an inbound call
+Record a call with split audio
+Record a call
+Record a conversation
+Record a message
+Retrieve information for a call
+Retrieve information for all calls
+Transfer a call
+Transfer a call with inline NCCO
+Track NCCO progress
+Tutorials
+Voice Inspector (Beta)
+NCCO Reference
+Webhook Reference
+API Reference
+SIP
+Track NCCO progress
+
+In this code snippet you see how to track how far through an NCCO a caller gets using the notify action
+
+Example
+Prerequisites
+Write the code
+
+Add the following to notify-a-call.js:
+
+const app = require('express')()
+
+const onInboundCall = (request, response) => {
+  const ncco = [{
+      "action": "talk",
+      "text": "Thanks for calling the notification line"
+    },
+    {
+      "action": "notify",
+      "payload": {
+        "foo": "bar"
+      },
+      "eventUrl": [
+        `${request.protocol}://${request.get('host')}/webhooks/notification`
+      ]
+    },
+    {
+      "action": "talk",
+      "text": "You will never hear me as the notification URL will return an NCCO "
+    }
+  ]
+
+  response.json(ncco)
+}
+
+const onNotification = (request, response) => {
+  const ncco = [{
+    "action": "talk",
+    "text": "Your notification has been received, loud and clear"
+  }]
+
+  response.json(ncco)
+}
+
+app
+  .get('/webhooks/answer', onInboundCall)
+  .post('/webhooks/notification', onNotification)
+
+app.listen(3000)
+Copy
+
+View full source
+
+Run your code
+
+Save this file to your machine and run it:
+
+Copy
+node notify-a-call.js
+Try it out
+
+When you call your Vonage Number you will hear a text-to-speech message and receive a request to your notification URL
+
+Feedback

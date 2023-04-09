@@ -1,0 +1,992 @@
+Use Cases
+Documentation
+SDKs & Tools
+Community
+Blog
+API Dashboard
+Vonage.com
+Pricing
+Support
+English
+中文
+日本語
+My profile
+My dashboard
+Log out
+Voice
+Voice API
+Overview
+Concepts
+Call Flow
+Call Control Objects
+Numbers
+Endpoints
+Text to Speech
+Customizing Spoken Text
+Speech to Text
+DTMF
+Call Recording
+Web Sockets
+Contact Center Intelligence
+Fraud Prevention
+Guides
+Code Snippets
+Tutorials
+Voice Inspector (Beta)
+NCCO Reference
+Webhook Reference
+API Reference
+SIP
+Text to Speech
+Overview
+
+Vonage uses text-to-speech engines to allow you to play machine generated speech to your users. This can either be done via an NCCO with the use of the talk action, or by making a PUT request to an in-progress call.
+
+You can customize how speech is read out by using Speech Synthesis Markup Language (SSML)
+
+Example
+
+The following NCCO demonstrates an example use case:
+
+[
+  {
+    "action": "talk",
+    "text": "Thank you for calling. Please leave your message after the tone."
+  }
+]
+
+Copy
+Locale
+
+You should choose a locale that matches the language type of the text you are asking to be read, trying to read Spanish with an en-us voice for example will not produce good results.
+
+You can set the language code (BCP-47) with a language parameter in the talk command, if you do not specify a language then Vonage will default to an en-US voice. For many languages Vonage offers a choice of voices with different styles. The style parameter maps to features such as vocal range, timbre and tessitura of the selected voice. You can experiment with different styles to find the one appropriate for your use case. You can choose a specific voice style by using the style parameter. By default, the first style (0) is used. Please note not all the voice styles support SSML, see the list of all the supported languages and SSML enabled styles below.
+
+NCCO example with specific voice language and style:
+
+[
+  {
+    "action": "talk",
+    "text": "Obrigado pela sua chamada. Por favor, deixe sua mensagem após o sinal.",
+    "language": "pt-PT",
+    "style": 6
+  }
+]
+
+Copy
+Premium Voices
+
+Some voice styles come with a premium alternative, which through the use of AI, have a more natural sound. To use a premium voice style, add the premium option in your NCCO:
+
+[
+  {
+    "action": "talk",
+    "text": "Obrigado pela sua chamada. Por favor, deixe sua mensagem após o sinal.",
+    "language": "pt-PT",
+    "style": 6,
+    "premium": true
+  }
+]
+
+Copy
+
+Premium Voices are chargeable at a rate of €0.0027 per 100 characters.
+
+Supported Languages
+Language	Code	Style	Premium	SSML Support	Sample
+Afrikaans	af-ZA	0		✔️	
+
+Arabic	ar	0		✔️	
+
+Arabic	ar	1		✔️	
+
+Arabic	ar	1	✔️	✔️	
+
+Arabic	ar	2			
+
+Arabic	ar	3		✔️	
+
+Arabic	ar	3	✔️	✔️	
+
+Arabic	ar	4		✔️	
+
+Arabic	ar	4	✔️	✔️	
+
+Arabic	ar	5			
+
+Arabic	ar	6			
+
+Arabic	ar	7		✔️	
+
+Arabic	ar	7	✔️	✔️	
+
+Basque	eu-ES	0			
+
+Bengali	bn-IN	0		✔️	
+
+Bengali	bn-IN	0	✔️	✔️	
+
+Bengali	bn-IN	1		✔️	
+
+Bengali	bn-IN	1	✔️	✔️	
+
+Bulgarian	bg-BG	0		✔️	
+
+Catalan, Valencian	ca-ES	0			
+
+Catalan, Valencian	ca-ES	1			
+
+Catalan, Valencian	ca-ES	2		✔️	
+
+Catalan, Valencian	ca-ES	3	✔️	✔️	
+
+Chinese, Cantonese (China)	yue-CN	0			
+
+Chinese, Cantonese (China)	yue-CN	1	✔️	✔️	
+
+Chinese, Cantonese (Hong Kong)	yue-HK	0		✔️	
+
+Chinese, Cantonese (Hong Kong)	yue-HK	1		✔️	
+
+Chinese, Cantonese (Hong Kong)	yue-HK	2		✔️	
+
+Chinese, Cantonese (Hong Kong)	yue-HK	3		✔️	
+
+Chinese, Mandarin (China)	cmn-CN	0		✔️	
+
+Chinese, Mandarin (China)	cmn-CN	0	✔️	✔️	
+
+Chinese, Mandarin (China)	cmn-CN	1		✔️	
+
+Chinese, Mandarin (China)	cmn-CN	1	✔️	✔️	
+
+Chinese, Mandarin (China)	cmn-CN	2		✔️	
+
+Chinese, Mandarin (China)	cmn-CN	2	✔️	✔️	
+
+Chinese, Mandarin (China)	cmn-CN	3			
+
+Chinese, Mandarin (China)	cmn-CN	4		✔️	
+
+Chinese, Mandarin (China)	cmn-CN	4	✔️	✔️	
+
+Chinese, Mandarin (China)	cmn-CN	5		✔️	
+
+Chinese, Mandarin (China)	cmn-CN	5	✔️	✔️	
+
+Chinese, Mandarin (Taiwan)	cmn-TW	0			
+
+Chinese, Mandarin (Taiwan)	cmn-TW	1		✔️	
+
+Chinese, Mandarin (Taiwan)	cmn-TW	1	✔️	✔️	
+
+Chinese, Mandarin (Taiwan)	cmn-TW	2		✔️	
+
+Chinese, Mandarin (Taiwan)	cmn-TW	2	✔️	✔️	
+
+Chinese, Mandarin (Taiwan)	cmn-TW	3		✔️	
+
+Chinese, Mandarin (Taiwan)	cmn-TW	3	✔️	✔️	
+
+Czech	cs-CZ	0		✔️	
+
+Czech	cs-CZ	0	✔️	✔️	
+
+Czech	cs-CZ	1			
+
+Czech	cs-CZ	2			
+
+Danish	da-DK	0		✔️	
+
+Danish	da-DK	1		✔️	
+
+Danish	da-DK	1	✔️	✔️	
+
+Danish	da-DK	2		✔️	
+
+Danish	da-DK	3		✔️	
+
+Danish	da-DK	3	✔️	✔️	
+
+Danish	da-DK	4		✔️	
+
+Danish	da-DK	4	✔️	✔️	
+
+Danish	da-DK	5		✔️	
+
+Danish	da-DK	5	✔️	✔️	
+
+Dutch (Belgium)	nl-BE	0		✔️	
+
+Dutch (Belgium)	nl-BE	0	✔️	✔️	
+
+Dutch (Belgium)	nl-BE	2		✔️	
+
+Dutch (Belgium)	nl-BE	2	✔️	✔️	
+
+Dutch (Netherlands)	nl-NL	0		✔️	
+
+Dutch (Netherlands)	nl-NL	1		✔️	
+
+Dutch (Netherlands)	nl-NL	1	✔️	✔️	
+
+Dutch (Netherlands)	nl-NL	2		✔️	
+
+Dutch (Netherlands)	nl-NL	2	✔️	✔️	
+
+Dutch (Netherlands)	nl-NL	3		✔️	
+
+Dutch (Netherlands)	nl-NL	3	✔️	✔️	
+
+Dutch (Netherlands)	nl-NL	4		✔️	
+
+Dutch (Netherlands)	nl-NL	5		✔️	
+
+Dutch (Netherlands)	nl-NL	5	✔️	✔️	
+
+Dutch (Netherlands)	nl-NL	6		✔️	
+
+Dutch (Netherlands)	nl-NL	6	✔️	✔️	
+
+English (Australia)	en-AU	0		✔️	
+
+English (Australia)	en-AU	1		✔️	
+
+English (Australia)	en-AU	1	✔️	✔️	
+
+English (Australia)	en-AU	2		✔️	
+
+English (Australia)	en-AU	2	✔️	✔️	
+
+English (Australia)	en-AU	3		✔️	
+
+English (Australia)	en-AU	4		✔️	
+
+English (Australia)	en-AU	4	✔️	✔️	
+
+English (Australia)	en-AU	5		✔️	
+
+English (Australia)	en-AU	5	✔️	✔️	
+
+English (Australia)	en-AU	8	✔️	✔️	
+
+English (India)	en-IN	0		✔️	
+
+English (India)	en-IN	1		✔️	
+
+English (India)	en-IN	2		✔️	
+
+English (India)	en-IN	2	✔️	✔️	
+
+English (India)	en-IN	3		✔️	
+
+English (India)	en-IN	3	✔️	✔️	
+
+English (India)	en-IN	4		✔️	
+
+English (India)	en-IN	4	✔️	✔️	
+
+English (India)	en-IN	5		✔️	
+
+English (India)	en-IN	5	✔️	✔️	
+
+English (India)	en-IN	6			
+
+English (India)	en-IN	7	✔️	✔️	
+
+English (New Zealand)	en-NZ	0	✔️	✔️	
+
+English (South Africa)	en-ZA	0			
+
+English (South Africa)	en-ZA	1	✔️	✔️	
+
+English (United Kingdom)	en-GB	0		✔️	
+
+English (United Kingdom)	en-GB	0	✔️	✔️	
+
+English (United Kingdom)	en-GB	1		✔️	
+
+English (United Kingdom)	en-GB	1	✔️	✔️	
+
+English (United Kingdom)	en-GB	2		✔️	
+
+English (United Kingdom)	en-GB	2	✔️	✔️	
+
+English (United Kingdom)	en-GB	3		✔️	
+
+English (United Kingdom)	en-GB	3	✔️	✔️	
+
+English (United Kingdom)	en-GB	4		✔️	
+
+English (United Kingdom)	en-GB	4	✔️	✔️	
+
+English (United Kingdom)	en-GB	5	✔️	✔️	
+
+English (United Kingdom)	en-GB	5		✔️	
+
+English (United Kingdom)	en-GB	6		✔️	
+
+English (United Kingdom)	en-GB	6	✔️	✔️	
+
+English (United Kingdom)	en-GB	7		✔️	
+
+English (United Kingdom)	en-GB	7	✔️	✔️	
+
+English (United Kingdom)	en-GB	9			
+
+English (United Kingdom)	en-GB	12	✔️	✔️	
+
+English (United States)	en-US	0		✔️	
+
+English (United States)	en-US	0	✔️	✔️	
+
+English (United States)	en-US	1		✔️	
+
+English (United States)	en-US	1	✔️	✔️	
+
+English (United States)	en-US	2		✔️	
+
+English (United States)	en-US	2	✔️	✔️	
+
+English (United States)	en-US	3		✔️	
+
+English (United States)	en-US	3	✔️	✔️	
+
+English (United States)	en-US	4		✔️	
+
+English (United States)	en-US	4	✔️	✔️	
+
+English (United States)	en-US	5		✔️	
+
+English (United States)	en-US	5	✔️	✔️	
+
+English (United States)	en-US	6		✔️	
+
+English (United States)	en-US	6	✔️	✔️	
+
+English (United States)	en-US	7		✔️	
+
+English (United States)	en-US	7	✔️	✔️	
+
+English (United States)	en-US	8		✔️	
+
+English (United States)	en-US	8	✔️	✔️	
+
+English (United States)	en-US	9		✔️	
+
+English (United States)	en-US	9	✔️	✔️	
+
+English (United States)	en-US	10		✔️	
+
+English (United States)	en-US	10	✔️	✔️	
+
+English (United States)	en-US	11		✔️	
+
+English (United States)	en-US	11	✔️	✔️	
+
+English (United States)	en-US	12		✔️	
+
+English (United States)	en-US	12	✔️	✔️	
+
+English (United States)	en-US	13		✔️	
+
+English (United States)	en-US	13	✔️	✔️	
+
+English (United States)	en-US	14		✔️	
+
+English (United States)	en-US	14	✔️	✔️	
+
+English (United States)	en-US	15			
+
+English (United States)	en-US	16			
+
+English (United States)	en-US	17			
+
+English (United States)	en-US	18			
+
+English (United States)	en-US	19			
+
+English (United States)	en-US	20		✔️	
+
+English (United States)	en-US	20	✔️	✔️	
+
+English (United States)	en-US	21		✔️	
+
+English (United States)	en-US	21	✔️	✔️	
+
+English (United States)	en-US	22		✔️	
+
+English (United States)	en-US	22	✔️	✔️	
+
+English (United States)	en-US	23			
+
+English (United States)	en-US	24	✔️	✔️	
+
+English (Wales)	en-GB-WLS	0		✔️	
+
+Filipino	fil-PH	0		✔️	
+
+Filipino	fil-PH	0	✔️	✔️	
+
+Filipino	fil-PH	1		✔️	
+
+Filipino	fil-PH	1	✔️	✔️	
+
+Filipino	fil-PH	2		✔️	
+
+Filipino	fil-PH	2	✔️	✔️	
+
+Filipino	fil-PH	3		✔️	
+
+Filipino	fil-PH	3	✔️	✔️	
+
+Finnish	fi-FI	0		✔️	
+
+Finnish	fi-FI	0	✔️	✔️	
+
+Finnish	fi-FI	1			
+
+French (Canada)	fr-CA	0		✔️	
+
+French (Canada)	fr-CA	1		✔️	
+
+French (Canada)	fr-CA	1	✔️	✔️	
+
+French (Canada)	fr-CA	2		✔️	
+
+French (Canada)	fr-CA	2	✔️	✔️	
+
+French (Canada)	fr-CA	3		✔️	
+
+French (Canada)	fr-CA	3	✔️	✔️	
+
+French (Canada)	fr-CA	4		✔️	
+
+French (Canada)	fr-CA	4	✔️	✔️	
+
+French (Canada)	fr-CA	8	✔️	✔️	
+
+French (Canada)	fr-CA	9	✔️	✔️	
+
+French (France)	fr-FR	0		✔️	
+
+French (France)	fr-FR	1		✔️	
+
+French (France)	fr-FR	1	✔️	✔️	
+
+French (France)	fr-FR	2		✔️	
+
+French (France)	fr-FR	2	✔️	✔️	
+
+French (France)	fr-FR	3		✔️	
+
+French (France)	fr-FR	3	✔️	✔️	
+
+French (France)	fr-FR	4		✔️	
+
+French (France)	fr-FR	4	✔️	✔️	
+
+French (France)	fr-FR	5		✔️	
+
+French (France)	fr-FR	6		✔️	
+
+French (France)	fr-FR	6	✔️	✔️	
+
+French (France)	fr-FR	7		✔️	
+
+French (France)	fr-FR	7	✔️	✔️	
+
+French (France)	fr-FR	8			
+
+French (France)	fr-FR	9			
+
+German (Germany)	de-DE	0		✔️	
+
+German (Germany)	de-DE	1		✔️	
+
+German (Germany)	de-DE	1	✔️	✔️	
+
+German (Germany)	de-DE	2		✔️	
+
+German (Germany)	de-DE	2	✔️	✔️	
+
+German (Germany)	de-DE	3		✔️	
+
+German (Germany)	de-DE	4		✔️	
+
+German (Germany)	de-DE	4	✔️	✔️	
+
+German (Germany)	de-DE	5		✔️	
+
+German (Germany)	de-DE	5	✔️	✔️	
+
+German (Germany)	de-DE	6		✔️	
+
+German (Germany)	de-DE	6	✔️	✔️	
+
+German (Germany)	de-DE	7		✔️	
+
+German (Germany)	de-DE	7	✔️	✔️	
+
+German (Germany)	de-DE	8		✔️	
+
+German (Germany)	de-DE	8	✔️	✔️	
+
+German (Germany)	de-DE	9			
+
+German (Germany)	de-DE	10			
+
+German (Germany)	de-DE	11	✔️	✔️	
+
+Greek	el-GR	0		✔️	
+
+Greek	el-GR	0	✔️	✔️	
+
+Greek	el-GR	1			
+
+Greek	el-GR	2			
+
+Gujarati	gu-IN	0	✔️	✔️	
+
+Gujarati	gu-IN	1	✔️	✔️	
+
+Hebrew	he-IL	0			
+
+Hindi	hi-IN	0		✔️	
+
+Hindi	hi-IN	1		✔️	
+
+Hindi	hi-IN	1	✔️	✔️	
+
+Hindi	hi-IN	2			
+
+Hindi	hi-IN	3		✔️	
+
+Hindi	hi-IN	3	✔️	✔️	
+
+Hindi	hi-IN	4		✔️	
+
+Hindi	hi-IN	4	✔️	✔️	
+
+Hindi	hi-IN	5		✔️	
+
+Hindi	hi-IN	5	✔️	✔️	
+
+Hindi	hi-IN	6	✔️	✔️	
+
+Hungarian	hu-HU	0		✔️	
+
+Hungarian	hu-HU	0	✔️	✔️	
+
+Hungarian	hu-HU	1			
+
+Icelandic	is-IS	0		✔️	
+
+Icelandic	is-IS	1		✔️	
+
+Icelandic	is-IS	2		✔️	
+
+Indonesian	id-ID	0		✔️	
+
+Indonesian	id-ID	0	✔️	✔️	
+
+Indonesian	id-ID	1			
+
+Indonesian	id-ID	2		✔️	
+
+Indonesian	id-ID	2	✔️	✔️	
+
+Indonesian	id-ID	3		✔️	
+
+Indonesian	id-ID	3	✔️	✔️	
+
+Indonesian	id-ID	4		✔️	
+
+Indonesian	id-ID	4	✔️	✔️	
+
+Italian	it-IT	0		✔️	
+
+Italian	it-IT	0	✔️	✔️	
+
+Italian	it-IT	1		✔️	
+
+Italian	it-IT	2		✔️	
+
+Italian	it-IT	2	✔️	✔️	
+
+Italian	it-IT	3		✔️	
+
+Italian	it-IT	3	✔️	✔️	
+
+Italian	it-IT	4		✔️	
+
+Italian	it-IT	5		✔️	
+
+Italian	it-IT	5	✔️	✔️	
+
+Italian	it-IT	6		✔️	
+
+Italian	it-IT	6	✔️	✔️	
+
+Japanese	ja-JP	0		✔️	
+
+Japanese	ja-JP	1		✔️	
+
+Japanese	ja-JP	1	✔️	✔️	
+
+Japanese	ja-JP	2		✔️	
+
+Japanese	ja-JP	2	✔️	✔️	
+
+Japanese	ja-JP	3		✔️	
+
+Japanese	ja-JP	3	✔️	✔️	
+
+Japanese	ja-JP	4		✔️	
+
+Japanese	ja-JP	4	✔️	✔️	
+
+Japanese	ja-JP	5		✔️	
+
+Japanese	ja-JP	5	✔️	✔️	
+
+Kannada	kn-IN	0		✔️	
+
+Kannada	kn-IN	1		✔️	
+
+Korean	ko-KR	0		✔️	
+
+Korean	ko-KR	0	✔️	✔️	
+
+Korean	ko-KR	1		✔️	
+
+Korean	ko-KR	1	✔️	✔️	
+
+Korean	ko-KR	2		✔️	
+
+Korean	ko-KR	2	✔️	✔️	
+
+Korean	ko-KR	3			
+
+Korean	ko-KR	4		✔️	
+
+Korean	ko-KR	4	✔️	✔️	
+
+Korean	ko-KR	5		✔️	
+
+Korean	ko-KR	5	✔️	✔️	
+
+Latvian	lv-LV	0		✔️	
+
+Malay	ms-MY	0		✔️	
+
+Malay	ms-MY	0	✔️	✔️	
+
+Malay	ms-MY	1		✔️	
+
+Malay	ms-MY	1	✔️	✔️	
+
+Malay	ms-MY	2		✔️	
+
+Malay	ms-MY	2	✔️	✔️	
+
+Malay	ms-MY	3		✔️	
+
+Malay	ms-MY	3	✔️	✔️	
+
+Malayalam	ml-IN	0		✔️	
+
+Malayalam	ml-IN	0	✔️	✔️	
+
+Malayalam	ml-IN	1		✔️	
+
+Malayalam	ml-IN	1	✔️	✔️	
+
+Norwegian	nb-NO	0		✔️	
+
+Norwegian	nb-NO	1		✔️	
+
+Norwegian	nb-NO	1	✔️	✔️	
+
+Norwegian	nb-NO	2		✔️	
+
+Norwegian	nb-NO	2	✔️	✔️	
+
+Norwegian	nb-NO	3		✔️	
+
+Norwegian	nb-NO	3	✔️	✔️	
+
+Norwegian	nb-NO	4		✔️	
+
+Norwegian	nb-NO	4	✔️	✔️	
+
+Norwegian	nb-NO	5		✔️	
+
+Norwegian	nb-NO	5	✔️	✔️	
+
+Norwegian	nb-NO	6			
+
+Norwegian	nb-NO	7			
+
+Polish	pl-PL	0		✔️	
+
+Polish	pl-PL	1		✔️	
+
+Polish	pl-PL	2		✔️	
+
+Polish	pl-PL	2	✔️	✔️	
+
+Polish	pl-PL	3		✔️	
+
+Polish	pl-PL	3	✔️	✔️	
+
+Polish	pl-PL	4		✔️	
+
+Polish	pl-PL	4	✔️	✔️	
+
+Polish	pl-PL	5		✔️	
+
+Polish	pl-PL	6		✔️	
+
+Polish	pl-PL	7		✔️	
+
+Polish	pl-PL	7	✔️	✔️	
+
+Polish	pl-PL	8		✔️	
+
+Polish	pl-PL	8	✔️	✔️	
+
+Portuguese (Brazil)	pt-BR	0		✔️	
+
+Portuguese (Brazil)	pt-BR	0	✔️	✔️	
+
+Portuguese (Brazil)	pt-BR	1		✔️	
+
+Portuguese (Brazil)	pt-BR	1	✔️	✔️	
+
+Portuguese (Brazil)	pt-BR	2			
+
+Portuguese (Brazil)	pt-BR	3		✔️	
+
+Portuguese (Brazil)	pt-BR	4			
+
+Portuguese (Brazil)	pt-BR	5		✔️	
+
+Portuguese (Brazil)	pt-BR	5	✔️	✔️	
+
+Portuguese (Portugal)	pt-PT	0		✔️	
+
+Portuguese (Portugal)	pt-PT	0	✔️	✔️	
+
+Portuguese (Portugal)	pt-PT	1		✔️	
+
+Portuguese (Portugal)	pt-PT	1	✔️	✔️	
+
+Portuguese (Portugal)	pt-PT	2		✔️	
+
+Portuguese (Portugal)	pt-PT	2	✔️	✔️	
+
+Portuguese (Portugal)	pt-PT	3			
+
+Portuguese (Portugal)	pt-PT	4			
+
+Portuguese (Portugal)	pt-PT	5		✔️	
+
+Portuguese (Portugal)	pt-PT	6		✔️	
+
+Portuguese (Portugal)	pt-PT	6	✔️	✔️	
+
+Portuguese (Portugal)	pt-PT	7		✔️	
+
+Portuguese (Portugal)	pt-PT	7	✔️	✔️	
+
+Punjabi	pa-IN	0		✔️	
+
+Punjabi	pa-IN	0	✔️	✔️	
+
+Punjabi	pa-IN	1		✔️	
+
+Punjabi	pa-IN	1	✔️	✔️	
+
+Punjabi	pa-IN	2		✔️	
+
+Punjabi	pa-IN	2	✔️	✔️	
+
+Punjabi	pa-IN	3		✔️	
+
+Punjabi	pa-IN	3	✔️	✔️	
+
+Romanian	ro-RO	0		✔️	
+
+Romanian	ro-RO	1			
+
+Romanian	ro-RO	2		✔️	
+
+Romanian	ro-RO	2	✔️	✔️	
+
+Russian	ru-RU	0		✔️	
+
+Russian	ru-RU	1		✔️	
+
+Russian	ru-RU	1	✔️	✔️	
+
+Russian	ru-RU	2		✔️	
+
+Russian	ru-RU	2	✔️	✔️	
+
+Russian	ru-RU	3		✔️	
+
+Russian	ru-RU	3	✔️	✔️	
+
+Russian	ru-RU	4		✔️	
+
+Russian	ru-RU	5		✔️	
+
+Russian	ru-RU	5	✔️	✔️	
+
+Russian	ru-RU	6		✔️	
+
+Russian	ru-RU	6	✔️	✔️	
+
+Serbian	sr-RS	0		✔️	
+
+Slovak	sk-SK	0		✔️	
+
+Slovak	sk-SK	0	✔️	✔️	
+
+Slovak	sk-SK	1			
+
+Spanish (Mexico)	es-MX	0		✔️	
+
+Spanish (Mexico)	es-MX	0	✔️	✔️	
+
+Spanish (Spain)	es-ES	0		✔️	
+
+Spanish (Spain)	es-ES	1		✔️	
+
+Spanish (Spain)	es-ES	1	✔️	✔️	
+
+Spanish (Spain)	es-ES	2		✔️	
+
+Spanish (Spain)	es-ES	3			
+
+Spanish (Spain)	es-ES	4		✔️	
+
+Spanish (Spain)	es-ES	5		✔️	
+
+Spanish (Spain)	es-ES	5	✔️	✔️	
+
+Spanish (Spain)	es-ES	6		✔️	
+
+Spanish (Spain)	es-ES	6	✔️	✔️	
+
+Spanish (Spain)	es-ES	7			
+
+Spanish (Spain)	es-ES	8		✔️	
+
+Spanish (Spain)	es-ES	8	✔️	✔️	
+
+Spanish (United States)	es-US	0		✔️	
+
+Spanish (United States)	es-US	1		✔️	
+
+Spanish (United States)	es-US	2		✔️	
+
+Spanish (United States)	es-US	2	✔️	✔️	
+
+Spanish (United States)	es-US	3		✔️	
+
+Spanish (United States)	es-US	3	✔️	✔️	
+
+Spanish (United States)	es-US	4		✔️	
+
+Spanish (United States)	es-US	4	✔️	✔️	
+
+Spanish (United States)	es-US	5		✔️	
+
+Spanish (United States)	es-US	5	✔️	✔️	
+
+Spanish (United States)	es-US	6	✔️	✔️	
+
+Swedish	sv-SE	0		✔️	
+
+Swedish	sv-SE	1		✔️	
+
+Swedish	sv-SE	1	✔️	✔️	
+
+Swedish	sv-SE	2			
+
+Swedish	sv-SE	3			
+
+Tamil	ta-IN	0		✔️	
+
+Tamil	ta-IN	0	✔️	✔️	
+
+Tamil	ta-IN	1		✔️	
+
+Tamil	ta-IN	1	✔️	✔️	
+
+Telugu	te-IN	0		✔️	
+
+Telugu	te-IN	1		✔️	
+
+Thai	th-TH	0			
+
+Thai	th-TH	1		✔️	
+
+Turkish	tr-TR	0		✔️	
+
+Turkish	tr-TR	1		✔️	
+
+Turkish	tr-TR	1	✔️	✔️	
+
+Turkish	tr-TR	2		✔️	
+
+Turkish	tr-TR	2	✔️	✔️	
+
+Turkish	tr-TR	3		✔️	
+
+Turkish	tr-TR	3	✔️	✔️	
+
+Turkish	tr-TR	4			
+
+Turkish	tr-TR	5		✔️	
+
+Turkish	tr-TR	5	✔️	✔️	
+
+Turkish	tr-TR	6		✔️	
+
+Turkish	tr-TR	6	✔️	✔️	
+
+Turkish	tr-TR	7			
+
+Ukrainian	uk-UA	0		✔️	
+
+Ukrainian	uk-UA	0	✔️	✔️	
+
+Vietnamese	vi-VN	0		✔️	
+
+Vietnamese	vi-VN	0	✔️	✔️	
+
+Vietnamese	vi-VN	1		✔️	
+
+Vietnamese	vi-VN	1	✔️	✔️	
+
+Vietnamese	vi-VN	2		✔️	
+
+Vietnamese	vi-VN	2	✔️	✔️	
+
+Vietnamese	vi-VN	3		✔️	
+
+Vietnamese	vi-VN	3	✔️	✔️	
+
+Welsh	cy-GB	0		✔️	
+
+Download the list of voices as a JSON file.
+
+Legacy Voice Names
+
+Previously, in order to set the desired language and voice style, you used the voiceName parameter with a certain "name" as the value. The voiceName parameter has been deprecated, and while you can continue to use it, it will not contain new styles and languages. For your convenience, see below for a mapping of the legacy voiceName parameter to language and style. Please note, not all the supported styles have a corresponding voiceName; thus it's recommended to use language and style in your application or service. You can listen to the voice samples in the table below.
+
+List of deprecated voice name parameter possible values
+Feedback

@@ -1,0 +1,155 @@
+Use Cases
+Documentation
+SDKs & Tools
+Community
+Blog
+API Dashboard
+Vonage.com
+Pricing
+Support
+English
+中文
+日本語
+My profile
+My dashboard
+Log out
+Voice
+Voice API
+Overview
+Concepts
+Guides
+Code Snippets
+Tutorials
+Voice Inspector (Beta)
+NCCO Reference
+Webhook Reference
+API Reference
+SIP
+Voice API Overview
+
+The Vonage Voice API is the easiest way to build high-quality voice applications in the Cloud. With the Voice API you can:
+
+Build apps that scale with the web technologies you are already using
+Control the flow of inbound and outbound calls in JSON with Nexmo Call Control Objects (NCCO). (Nexmo is now Vonage).
+Record and store inbound or outbound calls
+Create conference calls
+Send text-to-speech messages in 40 languages with different genders and accents
+Contents
+
+In this document you can learn about:
+
+How to Get Started with the Voice API including examples in your language
+Concepts to introduce terminology
+Guides learn about working with the Voice API
+Code Snippets code snippets to help with specific tasks
+Tutorials step by step explanations using the Voice API
+Reference API documentation and other supporting content
+Getting Started
+Voice Playground
+
+In the Developer Dashboard, you can try out the Voice API interactively in the Voice Playground. Once you are signed up for a Vonage API account, you can go to Voice Playground in the Dashboard (Voice ‣ Voice Playground).
+
+More details are available in this blog post: Meet Voice Playground, Your Testing Sandbox for Vonage Voice Apps
+
+Using the API
+
+The primary way that you'll interact with the Vonage API voice platform is via the public API. To place an outbound call, you make a POST request to https://api.nexmo.com/v1/calls.
+
+To make this easier, Vonage provides Server SDKs in various languages that take care of authentication and creating the correct request body for you.
+
+To get started, choose your language below and replace the following variables in the example code:
+
+Key	Description
+VONAGE_NUMBER	Your Vonage number that the call will be made from. For example 447700900000.
+TO_NUMBER	The number you would like to call to in E.164 format. For example 447700900001.
+Prerequisites
+Write the code
+
+Add the following to make-an-outbound-call.sh:
+
+curl -X POST https://api.nexmo.com/v1/calls\
+  -H "Authorization: Bearer "$JWT\
+  -H "Content-Type: application/json"\
+  -d '{"to":[{"type": "phone","number": "'$TO_NUMBER'"}],
+      "from": {"type": "phone","number": "'$VONAGE_NUMBER'"},
+      "answer_url":["https://raw.githubusercontent.com/nexmo-community/ncco-examples/gh-pages/text-to-speech.json"]}'
+Copy
+
+View full source
+
+Run your code
+
+Save this file to your machine and run it:
+
+Copy
+bash make-an-outbound-call.sh
+Concepts
+Authentication with JWTs - interaction with the Voice API are authenticated using JWTs (JSON Web Tokens). The libraries handle JWT generation using a unique Vonage Voice Application ID and a Private Key. For more information see authenticating your applications. You can also find more information on generating JWTs using the Vonage Server SDKs here.
+Vonage Voice Applications - Vonage Voice Applications represent a one-to-one mapping with the application that you are building. They contain configuration such as virtual numbers and webhook callback URLs. You can create Vonage Voice Applications using the Vonage Dashboard, the Vonage CLI, or via the Application API.
+Webhooks - HTTP requests are made to your application web server so that you can act upon them. For example, an incoming call will send a webhook.
+Call Flow - Learn how Call Control Objects are used throughout the flow of a call.
+Call Control Objects - Learn more about Call Control Objects, a set of actions that instruct Vonage how to control the call to your Vonage application.
+Numbers - The key concepts of using phone numbers in the Vonage Voice API.
+Endpoints - When connecting a call, you can connect to another phone number, a sip endpoint or a websocket. These are known as endpoints.
+Text to Speech - Using our Text-To-Speech engine, you can play machine-generated speech to your callers.
+Customizing Spoken Text - Use Speech Synthesis Markup Language (SSML) to control how text-to-speech is read out.
+Speech to Text - Capture user input by converting user speech to text form during a call.
+DTMF - Capture user input by detecting DTMF tones (button presses) during a call.
+Call Recording - Recording audio input from a caller or recording the conversation between two callers.
+Web Sockets - You can connect the audio of a call to a WebSocket to work with it in real time.
+Contact Center Intelligence - Learn how to enhance your contact center solution with Voice API.
+Fraud Prevention - Protect your Voice API applications from fraud.
+Guides
+Masked Calling - Enable users to call each other, keeping their real numbers private.
+Conference Calling - When a phone call is made or received by Vonage it is added to a conversation. A single conversation contains one or more phone calls (sometimes referred to as legs).
+Voice Notifications - Learn how to contact a list of people by phone, convey a message, and see who confirmed that they had received the message.
+Interactive Voice Response (IVR) - Build an automated phone system for users to input information with the keypad and hear a spoken response.
+Advanced IVR - This guide shows you how to use Automatic Speech Recognition to create a voice bot/interactive voice assistant application.
+Voice Bot with Google Dialogflow - This guide will help you to start with an example Dialogflow bot and interact with it from phone calls using provided sample reference codes using Vonage Voice API.
+Voice Bot with Amazon Lex Bot - This guide will help you to start with an example Amazon Lex bot and interact with it from Voice Calls using provided sample reference codes using Vonage Voice API.
+Click to Call - Learn how to enable your customers to call you directly from your website.
+Call Tracking - Keep track of which campaigns are working well by using different numbers for each one and tracking the incoming calls. This tutorial shows you how to handle incoming calls, connect them to another number, and track the phone numbers that called each of your Vonage numbers.
+Programmable SIP - Use Vonage SIP to forward inbound and send outbound Voice calls that use the Session Initiation Protocol.
+Voicemail - Learn how to record audio from inbound calls using .NET and the Vonage Voice API.
+Call Recording Transcription - This tutorial shows you how to use the Amazon Transcribe API to transcribe a phone conversation recorded with the Vonage Voice API.
+Voice Journey - This tutorial shows you how to add programmable assistance to your contact center.
+Local Numbers - Replace your toll-free numbers (e.g. 800, 0800) with local geographical numbers that allow you to provide a better customer service. Users can make cheaper calls and you can offer location-sensitive information when they contact you.
+Call Whisper - Phone numbers are everywhere in advertising: on billboards, in TV ads, on websites, in newspapers. Often these numbers all redirect to the same call center, where an agent needs to inquire why the person is calling, and where they saw the advert. Call Whispers make this so much simpler.
+Troubleshooting - A few things to look for if you are experiencing problems.
+Code Snippets
+Before you begin
+Connect an inbound call
+Connect callers into a conference
+Download a recording
+Earmuff a call
+Handle user input with ASR
+Handle user input with DTMF
+Make an outbound call
+Make an outbound call with an NCCO
+Mute a call
+Play an audio stream into a call
+Play DTMF into a call
+Play text-to-speech into a call
+Receive an inbound call
+Record a call
+Record a call with split audio
+Record a conversation
+Record a message
+Retrieve information for a call
+Retrieve information for all calls
+Track NCCO progress
+Transfer a call
+Transfer a call with inline NCCO
+Tutorials
+Agent Workplace - You receive a call from a phone to your app.
+App to App Calling - Make a voice call from a web app to a phone.
+Connect to a WebSocket - Connect an inbound call to a WebSocket with the Voice API.
+Build a Call Menu - Create an interactive voice response (IVR) menu to handle customer calls.
+Play Audio into a WebSocket - Learn how to connect an inbound Voice API call to a WebSocket, then play audio with JavaScript.
+Play Audio into a Call - A tutorial showing you how to build an app that will play audio into a PSTN call.
+Build a Voicemail - A tutorial showing you how to build an app that records incoming phone calls with .NET.
+Reference
+Voice API Reference
+NCCO Reference
+Webhook Reference
+Feedback

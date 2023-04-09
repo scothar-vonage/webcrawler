@@ -1,0 +1,156 @@
+Use Cases
+Documentation
+SDKs & Tools
+Community
+Blog
+API Dashboard
+Vonage.com
+Pricing
+Support
+English
+中文
+日本語
+My profile
+My dashboard
+Log out
+Voice
+Voice API
+SIP
+Overview
+Code Snippets
+Configure
+SIP Overview
+
+Vonage allows you to forward inbound and send outbound Voice calls using the Session Initiation Protocol.
+
+This document explains the relevant setup options.
+
+You can add advanced programmable features with Programmable SIP - learn more here.
+
+Endpoint
+
+You can send your INVITE requests to the Vonage SIP endpoints, depending on your region: sip-us.vonage.com (AMER), sip-eu.vonage.com (EMEA), sip-ap.vonage.com (APAC).
+
+Authentication
+
+Every INVITE request is authenticated with Digest authentication:
+
+username - your Vonage key
+password - your Vonage secret
+Service records
+
+If your system is not enabled for Service records (SRV records), you should load balance between the two closest endpoints and set the remaining ones as backup. The Vonage SIP endpoints are:
+
+sip-us-3.vonage.com (Virginia)
+Virginia Proxy 1: sip-us-3-1.vonage.com
+Virginia Proxy 2: sip-us-3-2.vonage.com
+sip-us-4.vonage.com (Oregon)
+Oregon Proxy 1: sip-us-4-1.vonage.com
+Oregon Proxy 2: sip-us-4-2.vonage.com
+sip-ap-3.vonage.com (Singapore)
+Singapore Proxy 1: sip-ap-3-1.vonage.com
+Singapore Proxy 2: sip-ap-3-2.vonage.com
+sip-ap-4.vonage.com (Sydney)
+Sydney Proxy 1: sip-ap-4-1.vonage.com
+Sydney Proxy 2: sip-ap-4-2.vonage.com
+sip-eu-3.vonage.com (Dublin)
+Dublin Proxy 1: sip-eu-3-1.vonage.com
+Dublin Proxy 2: sip-eu-3-2.vonage.com
+sip-eu-4.vonage.com (Frankfurt)
+Frankfurt Proxy 1: sip-eu-4-1.vonage.com
+Frankfurt Proxy 2: sip-eu-4-2.vonage.com
+Recipient
+
+Recipient numbers must be in E.164 format.
+
+Caller ID
+
+Set the Caller Line Identity (CLI) in the From header using E.164. For example: From: <sip:447700900000@sip-eu.vonage.com>.
+
+Codecs
+
+The following codecs are supported:
+
+PCMA (G711a)
+PCMU (G711u)
+iLBC
+g729 (without annexdb)
+g722
+Speex16
+Media traffic
+
+Visit the Vonage Knowledge Base to obtain a list of the IP ranges to open traffic for on all ports.
+
+DTMF
+
+Vonage supports out-of-band DTMF. For more information, see RFC4733.
+
+Health checks
+
+Use the OPTIONS(https://en.wikipedia.org/wiki/List_of_SIP_request_methods) method to run a health check on our SIP trunks.
+
+Protocols
+
+You can use the following protocols:
+
+UDP on port 5060
+TCP on port 5060
+TLS on port 5061
+
+Transport Layer Security (TLS) is a cryptographic protocol designed to provide communications security to your SIP connection. You can use self-signed certificates on your user agent, Vonage does not validate the client certificate.
+
+Connections using TLS 1.2 are accepted. Older protocols are disabled as they are considered insecure.
+
+Media Protocols
+
+You can use either Real-time Transport Protocol (RTP) or Secure Real-time Transport Protocol (SRTP) for the media exchange with Vonage. If there are security and privacy concerns, we highly recommend the use of SIP over TLS, so that the entire communication can be secured.
+
+For outbound calls, your SIP endpoint must negotiate SRTP automatically in the standard way. For inbound calls, see configuration details below.
+
+Note: Vonage supports a single crypto suite AES_CM_128_HMAC_SHA1_80
+
+Session Timers
+
+Vonage supports Session Timers RFC 4028; SIP customers that require Session Timers can negotiate them at the moment of establishing a session (INVITE).
+
+Inbound configuration
+
+Calls to Vonage numbers can be forwarded to SIP endpoints.
+
+This section tells you how to:
+
+Configure your system for SIP forwarding
+Configure example servers
+Configuring your system for SIP forwarding
+
+To configure for SIP forwarding:
+
+Sign into Dashboard.
+In Dashboard, click Numbers > Your Numbers.
+Scroll to the number to forward from, then click the Edit button under Manage.
+Under Voice, select SIP from the dropdown.
+Type a valid SIP URI and click Update. For example sip:1234@example.com. This field supports comma-separated entries for failover capabilities. For example: sip:1234@example.com,sip:1234@example.net,sip:1234@example.org. If you set more than one endpoint in Forward to SIP the call is initially forwarded to the first endpoint in the list. If this fails, the call is forwarded to the second endpoint in the list, and so on. Calls failover for the whole 5xx class of HTTP errors. The timeout is 486.
+You can set up the following URI parameters to configure behavior you wish to see from Vonage's platform. Namely:
+TLS - Vonage supports TLS for forwarded calls. To enable this, enter a valid URI in the format sip:user@(IP|domain);transport=tls. For example, sip:1234@example.com;transport=tls. By default, traffic is sent to port 5061. To use a different port, add it at the end of your domain or IP address: sip:1234@example.com:5062;transport=tls.
+SRTP - Vonage will also encrypt media using SRTP if necessary. To do that please add the following parameter to the URI: media=srtp. For example: sip:1234@example.com;transport=tls;media=srtp
+Timeouts - Vonage will attempt to contact your SIP endpoints sequentially for a given time before attempting the next URI in the list. This is achieved with the ;timeout=xxxxx parameter. For example: sip:1234@example.com;timeout=2000,sip:1234@example.net will attempt to forward to the first URI, and in case of no response within 2 seconds it will try the second one. Timeouts are expressed in milliseconds and can range from 2000 to 20000. This is useful to quickly fail over when an endpoint is temporarily unavailable. The default value is 5000 ms.
+Ensure that the traffic generated from Vonage IP addresses can pass your firewall. Visit the Vonage Knowledge Base to obtain the current list of IP addresses.
+Example configurations
+
+We have provided examples for a number of different SIP capable systems:
+
+Asterisk
+Avaya SBCe
+Cisco CUCM/CUBE
+FreePBX
+FreeSWITCH
+MiTel MiVoice and MiTel Border Gateway
+ShoreTel Director and InGate SIParator
+Skype for Business with Oracle E-SBC
+NEC SV9100
+Code Snippets
+Create a Domain
+Delete a Domain
+Query a Domain
+Update a Domain
+Feedback

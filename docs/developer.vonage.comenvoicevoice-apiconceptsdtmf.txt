@@ -1,0 +1,92 @@
+Use Cases
+Documentation
+SDKs & Tools
+Community
+Blog
+API Dashboard
+Vonage.com
+Pricing
+Support
+English
+中文
+日本語
+My profile
+My dashboard
+Log out
+Voice
+Voice API
+Overview
+Concepts
+Call Flow
+Call Control Objects
+Numbers
+Endpoints
+Text to Speech
+Customizing Spoken Text
+Speech to Text
+DTMF
+Call Recording
+Web Sockets
+Contact Center Intelligence
+Fraud Prevention
+Guides
+Code Snippets
+Tutorials
+Voice Inspector (Beta)
+NCCO Reference
+Webhook Reference
+API Reference
+SIP
+DTMF Tones
+Overview
+
+Dual Tone Multi Frequency (DTMF), is a form of signalling used by phone systems to transmit the digits 0-9 and the * and # characters. Typically a caller presses these buttons on their telephone keypad and the phone then generates a tone made up of two frequencies played simultaneously (hence Dual Tone).
+
+DTMF is used both for dialing a destination on a landline telephone and also for signalling to the remote end once a call is answered. Typically this is used to implement an Interactive Voice Response (IVR) system, or to enter information like a PIN number or conference call pin. The Vonage Voice API supports both collecting information from callers using the input action in an NCCO as well as sending DTMF tones within a call.
+
+Collecting Input
+
+You can collect input from your caller by using the input action within your NCCO. You can collect a specific number of digits, set a timeout value or wait until the user has pressed the # key before continuing (see the input action). Once the action is complete, Vonage will send a webhook to your event_url containing the keys that were pressed. If you return a new NCCO in response to this event Vonage will replace the existing NCCO, ignoring any actions defined after the input.
+
+NCCO Example
+[
+  {
+    "action": "talk",
+    "text": "Please enter a digit",
+    "bargeIn": true
+  },
+  {
+    "eventUrl": [
+      "https://api.example.com/callbacks/events"
+    ],
+    "action": "input",
+    "type": [ "dtmf" ],
+    "dtmf": {
+      "maxDigits": 1,
+      "submitOnHash": true,
+      "timeOut": 5
+    }
+  }
+]
+
+Copy
+
+The NCCO Reference Guide contains information on all the possible parameters that can be used in conjunction with the DTMF input NCCO action.
+
+Sending DTMF
+
+There are two ways to send DTMF tones to a call:
+
+For an outbound call made either via create call endpoint, or via a connect action, you can set the dtmfAnswer parameter within the phone endpoint. This means that when the call is answered, Vonage will automatically send the defined string of tones.
+
+You can also send DTMF digits to a call at any time by making a PUT request to the REST API, specifying a string of digits.
+
+You can use digits 0-9, *, and #. A p indicates a pause of 500ms if you need to add a delay in sending the digits.
+
+Troubleshooting
+
+DTMF can be sent across digital phone networks in several ways, known as In-Band and Out-of-Band, with In-Band the tones are played in the audio channel of the call and will be heard by the parties on the call. With Out-of-Band signalling the tones are sent in a separate signalling channel and may not be heard by a caller listening on the other end. This means that if you are testing sending DTMF by calling your own phone, you may not hear the tones in your earpiece.
+
+DTMF can also have specific local carrier problems. If you experience difficulties in using DTMF please contact support@nexmo.com with details of your problem.
+
+Feedback

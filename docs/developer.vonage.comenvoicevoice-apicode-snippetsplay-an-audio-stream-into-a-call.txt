@@ -1,0 +1,92 @@
+Use Cases
+Documentation
+SDKs & Tools
+Community
+Blog
+API Dashboard
+Vonage.com
+Pricing
+Support
+English
+中文
+日本語
+My profile
+My dashboard
+Log out
+Voice
+Voice API
+Overview
+Concepts
+Guides
+Code Snippets
+Before you begin
+Make an outbound call with an NCCO
+Connect an inbound call
+Download a recording
+Earmuff a call
+Handle user input with ASR
+Handle user input with DTMF
+Connect callers into a conference
+Make an outbound call
+Mute a call
+Play an audio stream into a call
+Play DTMF into a call
+Play text-to-speech into a call
+Receive an inbound call
+Record a call with split audio
+Record a call
+Record a conversation
+Record a message
+Retrieve information for a call
+Retrieve information for all calls
+Transfer a call
+Transfer a call with inline NCCO
+Track NCCO progress
+Tutorials
+Voice Inspector (Beta)
+NCCO Reference
+Webhook Reference
+API Reference
+SIP
+Play an audio stream into a call
+
+This code snippet plays an audio stream into the specified call.
+
+Example
+
+Replace the following variables in the example code:
+
+Key	Description
+UUID	
+
+The UUID of the call leg.
+
+
+URL	
+
+The URL of the audio file that will be streamed into an array. The URL must be in an array.
+
+Prerequisites
+Write the code
+
+Add the following to play-audio-into-a-call.sh:
+
+curl -X PUT https://api.nexmo.com/v1/calls/$UUID/stream \
+  -H "Authorization: Bearer "$JWT\
+  -H "Content-Type: application/json"\
+  -d '{"stream_url": ["https://raw.githubusercontent.com/nexmo-community/ncco-examples/gh-pages/assets/welcome_to_nexmo.mp3"]}'
+Copy
+
+View full source
+
+Run your code
+
+Save this file to your machine and run it:
+
+Copy
+bash play-audio-into-a-call.sh
+Try it out
+
+When you run the code an audio stream from the file specified is played into the call identified with the specified UUID.
+
+Feedback

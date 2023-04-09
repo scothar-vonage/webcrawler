@@ -1,0 +1,592 @@
+Use Cases
+Documentation
+SDKs & Tools
+Community
+Blog
+API Dashboard
+Vonage.com
+Pricing
+Support
+English
+中文
+日本語
+My profile
+My dashboard
+Log out
+Voice
+Voice API
+Overview
+Concepts
+Guides
+Masked Calling
+Conference Calling
+Voice Notifications
+Interactive Voice Response (IVR)
+Advanced IVR
+Voice Bot with Google Dialogflow
+Voice Bot with Amazon Lex
+Click to Call
+Call Tracking
+Programmable SIP
+Voicemail
+Call Recording Transcription
+Voice Journey
+Local Numbers
+Call Whisper
+Troubleshooting
+Code Snippets
+Tutorials
+Voice Inspector (Beta)
+NCCO Reference
+Webhook Reference
+API Reference
+SIP
+Transcribe a Recorded Call with Amazon Transcribe
+
+In this guide, you will learn how to record a Voice API call and transcribe it using the Amazon Transcribe API.
+
+Application Overview
+Prerequisites
+
+You need at least two personal phone numbers:
+
+One to call your Vonage number and initiate the conference call.
+Another that your Vonage number can call to include in the conference call.
+
+If you have access to more than two numbers you can include them as participants in the conference call too. See adding more callers.
+
+You also need a Vonage account. Sign up here if you don't already have one.
+
+Install and configure Vonage CLI
+
+This guide uses the Vonage Command line tool, so ensure that it is installed and configured before proceeding.
+
+Run the following npm command at a terminal prompt to install the CLI tool:
+
+Copy
+npm install -g @vonage/cli
+
+Configure the CLI tool with your VONAGE_API_KEY and VONAGE_API_SECRET, which you will find in the Developer Dashboard:
+
+Copy
+nexmo setup VONAGE_API_KEY VONAGE_API_SECRET
+Purchase a Vonage number
+
+If you don't already have one, buy a Vonage number to receive inbound calls.
+
+First, list the numbers available in your country (replace US with your two-character country code) Then purchase one of the available numbers:
+
+Copy
+vonage numbers:search US
+vonage numbers:buy [NUMBER] US
+Create a Voice API Application
+
+Use the CLI to create a Voice API Application that contains configuration details for the application you are building. These include:
+
+Your Vonage virtual number
+The following webhook endpoints:
+Answer webhook: The endpoint that Vonage makes a request to when your Vonage number receives an inbound call
+Event webhook: The endpoint that Vonage uses to notify your application about call state changes or errors
+
+Note: Your webhooks must be accessible over the public Internet. Consider using ngrok for testing purposes. If you do use ngrok, run it now on port 3000 using ngrok http 3000 to get the temporary URLs that ngrok provides and leave it running for the duration of this guide to prevent the URLs from changing.
+
+Replace example.com in the following command with your own public-facing URL or ngrok host name. Run it in the root of your application directory. This returns an application ID and downloads the authentication details in a file called private.key.
+
+Copy
+vonage apps:create "Call Transcription" --voice_answer_url=https://example.com/webhooks/answer --voice_event_url=https://example.com/webhooks/events
+Copy
+vonage numbers:search US
+vonage numbers:buy [NUMBER] US
+
+Make a note of the Application ID and the location of the call_transcription.key file. You will need these in later steps.
+
+Link your Vonage number
+
+Run the following CLI command to link your Voice API Application with your Vonage number using the Application ID:
+
+Copy
+vonage apps:link [APP_ID] --number=[NUMBER]
+Configure AWS
+
+The transcription is performed by the Amazon Transcribe API, which is part of Amazon Web Services (AWS). You need an AWS account to use the Transcribe API. If you haven't already got an AWS account, you'll learn how to create one in the next step.
+
+You will also need to:
+
+Create two new S3 buckets to store the raw call audio and generated transcripts
+Configure a CloudWatch event. This triggers a serverless Lambda function when your transcription job is complete.
+Create and deploy the Lambda function that notifies your application that the transcript is available for download.
+Create an AWS account
+
+Create an AWS account with an Administrator user. Make a note of your AWS key and secret, because you cannot retrieve the secret later on.
+
+Install the AWS CLI
+
+Install and configure the AWS CLI using this guide.
+
+Create S3 storage buckets
+
+Use the following AWS CLI commands to create two new S3 buckets in your chosen region (us-east-1 in this example), one for the raw call audio and the other for the generated transcripts. These must be uniquely named across S3, so be creative!
+
+Important: Ensure that the region you choose supports both the Amazon Transcribe API and CloudWatch Events:
+
+Copy
+aws s3 mb s3://your-audio-bucket-name --region us-east-1
+aws s3 mb s3://your-transcription-bucket-name --region us-east-1
+Configure the application
+Get the code
+
+The code for this project is on GitHub. It is written in node.js using the express web application framework. It is a working example that you can adapt to suit your own requirements.
+
+Either clone or download the repository to your local machine, in a new directory.
+
+Install dependencies
+
+Run npm install in the application directory to install the required dependencies:
+
+aws-sdk: The AWS node.js SDK
+body-parser: node.js body-parsing middleware
+express: A web application framework for node.js
+nexmo: The Vonage Server SDK
+serverless: To deploy your Lambda function
+shortid: Generates random file names for call recordings
+Configure environment variables
+
+Move your downloaded private.key file into the root of your application directory.
+
+Then, copy example.env to .env and configure the following settings:
+
+Setting	Description
+VONAGE_APPLICATION_ID	The Vonage Voice Application ID you created earlier
+VONAGE_PRIVATE_KEY_FILE	For example: private.key
+OTHER_PHONE_NUMBER	Another phone number you can call to create a conversation
+AWS_KEY	Your AWS key
+AWS_SECRET	Your AWS secret
+AWS_REGION	Your AWS region, e.g. us-east-1
+S3_PATH	Your path to S3 bucket storage, which should include the AWS_REGION, e.g. https://s3-us-east-1.amazonaws.com
+S3_AUDIO_BUCKET_NAME	The S3 bucket which will contain the raw call audio files
+S3_TRANSCRIPTS_BUCKET_NAME	The S3 bucket which will contain transcripts of the call audio
+Deploy your Lambda function
+
+AWS Lambda is a service that runs code in response to events and automatically manages the computing resources that code requires. It is an example of a "serverless" function, also known as "Function as a Service" (FAAS). In this guide, you will use the serverless framework to template and deploy your Lambda function.
+
+First, ensure that the serverless node package is installed:
+
+Copy
+serverless -v
+
+If it displays the version number, you are good to go. If not, install serverless using npm:
+
+Copy
+npm install -g serverless
+
+The transcribeReadyService folder contains a handler.js file which defines the Lambda function. This lambda makes a POST request to the /webhooks/transcription endpoint when CloudWatch receives a transcription job complete event.
+
+Change the options.host property to match your public-facing server's host name:
+
+const https = require('https');
+
+exports.transcribeJobStateChanged = (event, context) => {
+
+  let body = '';
+
+  const options = {
+    host: 'myapp.ngrok.io', // <-- replace this
+    path: '/webhooks/transcription',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  };
+
+  const req = https.request(options, (res) => {
+    res.on('data', (chunk) => {
+      body += chunk;
+    });
+
+    context.succeed(body);
+  });
+
+  req.write(JSON.stringify(event));
+  req.end();
+};
+
+Copy
+
+The CloudWatch event handler is defined in the accompanying serverless.yml file. Make sure that the provider.region matches your AWS region:
+
+service: vonage-transcribe
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  region: us-east-1 # <-- Specify your region
+
+functions:
+  transcribeJobStateChanged:
+    handler: handler.transcribeJobStateChanged
+
+    events:
+      - cloudwatchEvent:
+          event:
+            source:
+              - "aws.transcribe"
+            detail-type:
+              - "Transcribe Job State Change"
+            detail:
+              TranscriptionJobStatus:
+                - COMPLETED
+                - FAILED
+
+Copy
+
+Deploy this Lambda using serverless:
+
+Copy
+cd transcribeReadyService
+serverless deploy
+
+Note: This process takes several minutes to complete. If you need to update anything, subsequent deployments should be faster.
+
+Examine the code
+
+The main application code is in the index.js file.
+
+The application directory also contains the following sub folders:
+
+recordings: Will contain the raw audio call mp3 files, uniquely named using shortid
+transcripts: Contains the completed transcripts, downloaded from S3 when the transcription jobs complete
+transcribeReadyService: Contains the Lambda function and CloudWatch event definition YAML
+Using the Node Server SDK
+
+The following code in index.js instantiates the Node Server SDK, which you will use to save the call recordings later on:
+
+const Nexmo = require("nexmo")
+
+const nexmo = new Nexmo({
+  apiKey: "not_used", // Voice applications don't use API key or secret
+  apiSecret: "not_used",
+  applicationId: process.env.VONAGE_APPLICATION_ID,
+  privateKey: __dirname + "/" + process.env.VONAGE_PRIVATE_KEY_FILE
+})
+
+Copy
+Using the AWS SDK
+
+The following code authenticates the AWS SDK and creates new TranscribeService and S3 instances:
+
+const AWS = require("aws-sdk")
+
+AWS.config.update({
+  region: process.env.AWS_REGION,
+  accessKeyId: process.env.AWS_KEY,
+  secretAccessKey: process.env.AWS_SECRET
+})
+
+const transcribeService = new AWS.TranscribeService()
+const S3 = new AWS.S3()
+
+Copy
+Defining the answer webhook
+
+The /webhooks/answer endpoint responds to an incoming call with a Nexmo Call Control Object (NCCO) that tells Vonage how to handle the call.
+
+It uses a connect action to call your other personal number and a record action to record the call audio, specifying that there are two input channels. The record action triggers a POST request to the /webhooks/recording endpoint when the call completes:
+
+app.get('/webhooks/answer', (req, res) => {
+  return res.json([{
+      action: 'talk',
+      text: 'Thanks for calling, we will connect you now'
+    },
+    {
+      action: 'connect',
+      endpoint: [{
+        type: 'phone',
+        number: process.env.OTHER_PHONE_NUMBER
+      }]
+    },
+    {
+      action: 'record',
+      eventUrl: [`${req.protocol}://${req.get('host')}/webhooks/recording`],
+      split: 'conversation',
+      channels: 2,
+      format: 'mp3'
+    }
+  ])
+})
+
+Copy
+Defining the events webhook
+
+The /webhooks/events endpoint logs call events (submitted by Vonage as a POST request) and displays them to the console:
+
+app.post('/webhooks/events', (req, res) => {
+  console.log(req.body)
+  return res.status(204).send("")
+})
+
+Copy
+Saving the recording
+
+The /webhooks/recording endpoint saves the call recording to the recordings folder and calls uploadFile() to upload the call audio to S3:
+
+app.post('/webhooks/recording', (req, res) => {
+
+  let audioFileName = `vonage-${shortid.generate()}.mp3`
+  let audioFileLocalPath = `./recordings/${audioFileName}`
+
+  nexmo.files.save(req.body.recording_url, audioFileLocalPath, (err, res) => {
+    if (err) {
+      console.log("Could not save audio file")
+      console.error(err)
+    }
+    else {
+      uploadFile(audioFileLocalPath, audioFileName)
+    }
+  })
+
+  return res.status(204).send("")
+
+})
+
+Copy
+Uploading the recording to S3
+
+The uploadFile() function performs the actual upload to S3 and starts the transcription process:
+
+function uploadFile(localPath, fileName) {
+
+  fs.readFile(localPath, (err, data) => {
+    if (err) { throw err }
+
+    const uploadParams = {
+      Bucket: process.env.S3_AUDIO_BUCKET_NAME,
+      Key: fileName,
+      Body: data
+    }
+
+    const putObjectPromise = S3.putObject(uploadParams).promise()
+    putObjectPromise.then((data) => {
+      console.log(`${fileName} uploaded to ${process.env.S3_AUDIO_BUCKET_NAME} bucket`)
+      transcribeRecording({
+        audioFileUri: process.env.S3_PATH + '/' + process.env.S3_AUDIO_BUCKET_NAME + '/' + fileName,
+        transcriptFileName: `transcript-${fileName}`
+      })
+    })
+  })
+}
+
+Copy
+Submitting the transcription job
+
+The transcribeRecording() function submits the audio file for transcription by the Amazon Transcribe API.
+
+Note in the parameters to startTranscriptionJob() that channelIdentification is set to true. This tells the Amazon Transcribe API to transcribe each channel separately.
+
+The parameters also include OutputBucketName to store the completed transcript in the specified S3 bucket.
+
+function transcribeRecording(params) {
+
+  const jobParams = {
+    LanguageCode: 'en-GB',
+    Media: {
+      MediaFileUri: params.audioFileUri
+    },
+    MediaFormat: 'mp3',
+    OutputBucketName: process.env.S3_TRANSCRIPTS_BUCKET_NAME,
+    Settings: {
+      ChannelIdentification: true
+    },
+    TranscriptionJobName: params.transcriptFileName
+  }
+
+  console.log(`Submitting file ${jobParams.Media.MediaFileUri} for transcription...`)
+
+  const startTranscriptionJobPromise = transcribeService.startTranscriptionJob(jobParams).promise()
+
+  startTranscriptionJobPromise.then((data) => {
+    console.log(`Started transcription job ${data.TranscriptionJob.TranscriptionJobName}...`)
+  })
+}
+
+Copy
+Transcription job complete
+
+When CloudWatch learns that the transcription job has completed, it triggers our Lambda. The Lambda function makes a POST request to the /webhooks/transcription endpoint with the results of the transcription:
+
+app.post('/webhooks/transcription', (req, res) => {
+
+  const jobname = req.body.detail.TranscriptionJobName
+  const jobstatus = req.body.detail.TranscriptionJobStatus
+
+  if (jobstatus === "FAILED") {
+    console.log(`Error processing job ${jobname}`)
+  } else {
+    console.log(`${jobname} job successful`)
+
+    const params = {
+      TranscriptionJobName: jobname
+    }
+    console.log(`Getting transcription job: ${params.TranscriptionJobName}`)
+
+    transcribeService.getTranscriptionJob(params, (err, data) => {
+      if (err) {
+        console.log(err, err.stack)
+      }
+      else {
+        console.log("Retrieved transcript")
+        downloadFile(data.TranscriptionJob.TranscriptionJobName + '.json')
+      }
+    })
+  }
+  return res.status(200).send("")
+})
+
+Copy
+Downloading the completed transcript
+
+The downloadFile function downloads the completed transcript file from the S3 bucket to the local transcripts folder. We want to ensure that the file is available before we attempt to parse its contents, so we wrap the call to S3.getObject in a promise before calling the displayResults function:
+
+function downloadFile(key) {
+  console.log(`downloading ${key}`)
+
+  const filePath = `./transcripts/${key}`
+
+  const params = {
+    Bucket: process.env.S3_TRANSCRIPTS_BUCKET_NAME,
+    Key: key
+  }
+
+  const getObjectPromise = S3.getObject(params).promise()
+  getObjectPromise.then((data) => {
+    fs.writeFileSync(filePath, data.Body.toString())
+    console.log(`Transcript: ${filePath} has been created.`)
+    let transcriptJson = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+    displayResults(transcriptJson)
+  })
+
+}
+
+Copy
+Parsing the transcript
+
+The resulting transcript JSON file has quite a complex structure. At the top of the file (results.transcripts) is the transcription of all the entire call and in results.channel_labels you can drill into the transcription for each channel:
+
+{
+	"jobName": "transcript-vonage-9Eeor0OhH.mp3",
+	"accountId": "99999999999",
+	"results": {
+		"transcripts": [{
+			"transcript": "This is a test on my mobile phone. This is a test on my landline."
+		}],
+		"channel_labels": {
+			"channels": [{
+				"channel_label": "ch_0",
+				"items": [{
+					"start_time": "1.94",
+					"end_time": "2.14",
+					"alternatives": [{
+						"confidence": "1.0000",
+						"content": "This"
+					}],
+					"type": "pronunciation"
+				}, {
+					"start_time": "2.14",
+					"end_time": "2.28",
+					"alternatives": [{
+						"confidence": "1.0000",
+						"content": "is"
+					}],
+					"type": "pronunciation"
+				}, 
+        ...
+
+Copy
+
+The displayResults() function that is called after the transcript has been downloaded retrieves the transcription for each channel and displays it in the console:
+
+function displayResults(transcriptJson) {
+  const channels = transcriptJson.results.channel_labels.channels
+
+  channels.forEach((channel) => {
+    console.log(`*** Channel: ${channel.channel_label}`)
+
+    let words = ''
+
+    channel.items.forEach((item) => {
+      words += item.alternatives[0].content + ' '
+    })
+    console.log(words)
+  })
+}
+
+Copy
+Try it out
+Running the application
+
+Launch your application by running the following command in the application's root directory:
+
+Copy
+node index.js
+
+Call your Vonage number from one phone. When the call is answered, your second phone should ring. Answer it.
+
+Say a few words into each handset and then disconnect both.
+
+Watch the transcription job being processed in your console. (Note: this can take several minutes):
+
+Copy
+{ end_time: '2019-08-13T11:33:10.000Z',
+ uuid: 'df52c28f-d167-5319-a7e6-bc9d9c2b23d2',
+ network: 'GB-FIXED',
+ duration: '23',
+ start_time: '2019-08-13T11:32:47.000Z',
+ rate: '0.01200000',
+ price: '0.00460000',
+ from: '447700900002',
+ to: '447700900001',
+ conversation_uuid: 'CON-e01f1887-8a7e-4c6d-82ef-fd9280190e01',
+ status: 'completed',
+ direction: 'outbound',
+ timestamp: '2019-08-13T11:33:09.380Z' }
+recording...
+{ start_time: '2019-08-13T11:32:47Z',
+ recording_url:
+ 'https://api.nexmo.com/v1/files/d768cbb4-d68c-4ad0-8984-8222d2ccb6c5',
+ size: 178830,
+ recording_uuid: '01175e1e-f778-4b2a-aa7e-18b6fb493edf',
+ end_time: '2019-08-13T11:33:10Z',
+ conversation_uuid: 'CON-e01f1887-8e7e-4c6d-82ef-fd8950190e01',
+ timestamp: '2019-08-13T11:33:10.449Z' }
+vonage-srWr3XOmP.mp3 uploaded to vonage-transcription-audio bucket
+Submitting file https://s3-us-east-1.amazonaws.com/vonage-transcription-audio/vonage-srWr3XOmP.mp3 for transcription...
+Started transcription job transcript-vonage-srWr3XOmP.mp3...
+transcript-vonage-srWr3XOmP.mp3 job successful
+Getting transcription job: transcript-vonage-srWr3XOmP.mp3
+Retrieved transcript
+downloading transcript-vonage-srWr3XOmP.mp3.json
+Transcript: ./transcripts/transcript-vonage-srWr3XOmP.mp3.json has been created.
+*** Channel: ch_0
+Hello this is channel zero .
+*** Channel: ch_1
+Hello back this is channel one .
+Adding more callers
+
+If you have more than two numbers, you can add more callers to the conversation. Create a connect action for each in the /webhooks/answer NCCO and increase the number of channels in the record action accordingly.
+
+Further reading
+
+The following resources will help you learn more:
+
+Voice API
+Voice API call recording guide
+"Record a call" code snippet
+Voice API reference
+NCCO reference
+AWS
+AWS node.js SDK reference
+Amazon Transcribe API features
+Amazon Transcribe API reference
+Amazon S3 documentation
+Amazon CloudWatch documentation
+Amazon Lambda
+Feedback

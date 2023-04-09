@@ -1,0 +1,117 @@
+Use Cases
+Documentation
+SDKs & Tools
+Community
+Blog
+API Dashboard
+Vonage.com
+Pricing
+Support
+English
+中文
+日本語
+My profile
+My dashboard
+Log out
+Voice
+Voice API
+Overview
+Concepts
+Guides
+Code Snippets
+Before you begin
+Make an outbound call with an NCCO
+Connect an inbound call
+Download a recording
+Earmuff a call
+Handle user input with ASR
+Handle user input with DTMF
+Connect callers into a conference
+Make an outbound call
+Mute a call
+Play an audio stream into a call
+Play DTMF into a call
+Play text-to-speech into a call
+Receive an inbound call
+Record a call with split audio
+Record a call
+Record a conversation
+Record a message
+Retrieve information for a call
+Retrieve information for all calls
+Transfer a call
+Transfer a call with inline NCCO
+Track NCCO progress
+Tutorials
+Voice Inspector (Beta)
+NCCO Reference
+Webhook Reference
+API Reference
+SIP
+Record a message
+
+A code snippet that shows how to record a conversation. Answer an incoming call and return an NCCO that includes a record action. When the call is complete, a webhook is sent to the eventUrl you specify. The webhook includes the URL of the recording.
+
+Example
+Prerequisites
+Write the code
+
+Add the following to record-a-message.js:
+
+const app = require('express')()
+const bodyParser = require('body-parser')
+
+app.use(bodyParser.json())
+
+const onInboundCall = (request, response) => {
+  const ncco = [{
+      action: 'talk',
+      text: 'Please leave a message after the tone, then press #. We will get back to you as soon as we can.'
+    },
+    {
+      action: 'record',
+      endOnKey: '#',
+      beepStart: 'true',
+      endOnSilence: "3",
+      eventUrl: [
+        `${request.protocol}://${request.get('host')}/webhooks/recordings`
+      ]
+    },
+    {
+      action: 'talk',
+      text: 'Thank you for your message. Goodbye.'
+    }
+  ]
+
+  response.json(ncco)
+}
+
+const onRecording = (request, response) => {
+  const recording_url = request.body.recording_url
+  console.log(`Recording URL = ${recording_url}`)
+
+  response.status(204).send()
+}
+
+app
+  .get('/webhooks/answer', onInboundCall)
+  .post('/webhooks/recordings', onRecording)
+
+app.listen(3000)
+Copy
+
+View full source
+
+Run your code
+
+Save this file to your machine and run it:
+
+Copy
+node record-a-message.js
+Try it out
+
+You will need to:
+
+Record a message by dialling your Vonage Number, and leaving your message after the tone (this code snippet).
+Download the recording. See the Download a recording code snippet for how to do this.
+Feedback

@@ -1,0 +1,99 @@
+Use Cases
+Documentation
+SDKs & Tools
+Community
+Blog
+API Dashboard
+Vonage.com
+Pricing
+Support
+English
+中文
+日本語
+My profile
+My dashboard
+Log out
+Voice
+Voice API
+Overview
+Concepts
+Guides
+Code Snippets
+Before you begin
+Make an outbound call with an NCCO
+Connect an inbound call
+Download a recording
+Earmuff a call
+Handle user input with ASR
+Handle user input with DTMF
+Connect callers into a conference
+Make an outbound call
+Mute a call
+Play an audio stream into a call
+Play DTMF into a call
+Play text-to-speech into a call
+Receive an inbound call
+Record a call with split audio
+Record a call
+Record a conversation
+Record a message
+Retrieve information for a call
+Retrieve information for all calls
+Transfer a call
+Transfer a call with inline NCCO
+Track NCCO progress
+Tutorials
+Voice Inspector (Beta)
+NCCO Reference
+Webhook Reference
+API Reference
+SIP
+Make an outbound call
+
+This code snippet makes an outbound call and plays a text-to-speech message when the call is answered.
+
+Example
+
+Replace the following variables in the example code:
+
+Key	Description
+VONAGE_NUMBER	
+
+Your Vonage Number. E.g. 447700900000
+
+
+TO_NUMBER	
+
+The number you are calling. E.g. 447700900001
+
+
+ANSWER_URL	
+
+The answer URL. For example https://raw.githubusercontent.com/nexmo-community/ncco-examples/gh-pages/text-to-speech.json.
+
+Prerequisites
+Write the code
+
+Add the following to make-an-outbound-call.sh:
+
+curl -X POST https://api.nexmo.com/v1/calls\
+  -H "Authorization: Bearer "$JWT\
+  -H "Content-Type: application/json"\
+  -d '{"to":[{"type": "phone","number": "'$TO_NUMBER'"}],
+      "from": {"type": "phone","number": "'$VONAGE_NUMBER'"},
+      "answer_url":["https://raw.githubusercontent.com/nexmo-community/ncco-examples/gh-pages/text-to-speech.json"]}'
+Copy
+
+View full source
+
+Run your code
+
+Save this file to your machine and run it:
+
+Copy
+bash make-an-outbound-call.sh
+Try it out
+
+When you run the code the TO_NUMBER will be called and a text-to-speech message will be heard if the call is answered.
+
+Feedback

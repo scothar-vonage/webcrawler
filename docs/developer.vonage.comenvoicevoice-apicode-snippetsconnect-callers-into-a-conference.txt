@@ -1,0 +1,105 @@
+Use Cases
+Documentation
+SDKs & Tools
+Community
+Blog
+API Dashboard
+Vonage.com
+Pricing
+Support
+English
+中文
+日本語
+My profile
+My dashboard
+Log out
+Voice
+Voice API
+Overview
+Concepts
+Guides
+Code Snippets
+Before you begin
+Make an outbound call with an NCCO
+Connect an inbound call
+Download a recording
+Earmuff a call
+Handle user input with ASR
+Handle user input with DTMF
+Connect callers into a conference
+Make an outbound call
+Mute a call
+Play an audio stream into a call
+Play DTMF into a call
+Play text-to-speech into a call
+Receive an inbound call
+Record a call with split audio
+Record a call
+Record a conversation
+Record a message
+Retrieve information for a call
+Retrieve information for all calls
+Transfer a call
+Transfer a call with inline NCCO
+Track NCCO progress
+Tutorials
+Voice Inspector (Beta)
+NCCO Reference
+Webhook Reference
+API Reference
+SIP
+Connect callers to a conference
+
+This code snippet shows how to join multiple calls into a conversation.
+
+Multiple inbound calls can be joined into a conversation (conference call) by connecting the call into the same named conference.
+
+Conference names are scoped at the Vonage Application level. For example, VonageApp1 and VonageApp2 could both have a conference called vonage-conference and there would be no problem.
+
+Example
+
+Replace the following variables in the example code:
+
+Key	Description
+CONF_NAME	
+
+The named identifier for your conference.
+
+Prerequisites
+Write the code
+
+Add the following to conference-call.js:
+
+const onInboundCall = (request, response) => {
+  const ncco = [
+    {
+      action: 'talk',
+      text: 'Please wait while we connect you to the conference'
+    },
+    {
+      action: 'conversation',
+      name: CONF_NAME
+    }
+  ]
+
+  response.json(ncco)
+}
+
+app.get('/webhooks/answer', onInboundCall)
+
+app.listen(3000)
+Copy
+
+View full source
+
+Run your code
+
+Save this file to your machine and run it:
+
+Copy
+node conference-call.js
+Try it out
+
+Start your server and make multiple inbound calls to the Vonage Number assigned to this Vonage Application. The inbound calls will be connected into the same conversation (conference).
+
+Feedback
