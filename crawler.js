@@ -1,12 +1,18 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 
+//const startUrls = ["https://developer.vonage.com/en/voice/voice-api/overview"];
+const startUrls = ["https://developer.vonage.com/en/api/voice.v2"];
 
-const startUrls = ["https://developer.vonage.com/en/voice/voice-api/overview"];
-const path = __dirname + "/docs/text/";
+const path = __dirname + "/docs/api-ref/";
 
+//For Guides
+// const xpath =
+//   '//*[@id="single-spa-application:en-dev-portal"]/div/div/div/div/div[2]';
+
+//For API Reference Docs
 const xpath =
-  '//*[@id="single-spa-application:en-dev-portal"]/div/div/div/div/div[2]';
+     '//*[@id="single-spa-application:en-dev-portal"]/div/div/div/div[2]';
 
 //This will save our history, so we don't process a page multiple times
 const history = [];
@@ -16,7 +22,7 @@ async function savePageAsText(url, page) {
     return document.documentElement.innerText;
   });
 
-  const fileName = url.replace(/https?:\/\/|\/|www\./g, '') + '.txt';
+  const fileName = url.replace(/https?:\/\/|\/|www\./g, "") + ".txt";
   fs.writeFileSync(path + fileName, textContent);
 }
 
@@ -39,7 +45,7 @@ async function crawl(url, browser) {
     anchors
       .map((a) => a.href)
       .filter((href) =>
-        href.startsWith("https://developer.vonage.com/en/voice/")
+        href.startsWith("https://developer.vonage.com/en/api/voice")
       )
   );
 
@@ -50,11 +56,8 @@ async function crawl(url, browser) {
   // Close the page
   await page.close();
 
-
-  
   // Recursively crawl the extracted links
   for (const link of links) {
-
     //We hash each url and store them in history so we only process a page once.
     const hash = getHash(link);
     if (inHistory(hash)) {
@@ -66,10 +69,8 @@ async function crawl(url, browser) {
       history.push(v);
 
       await crawl(link, browser);
-      i++;
     }
   }
-  
 }
 
 (async () => {
