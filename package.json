@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "puppeteer": "^19.8.5",
-    "turndown": "^7.1.2"
+    "turndown": "^7.1.2",
+    "winston": "^3.8.2"
   }
 }

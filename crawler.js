@@ -1,21 +1,67 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs");
+const winston = require("winston");
 
-//const startUrls = ["https://developer.vonage.com/en/voice/voice-api/overview"];
-const startUrls = ["https://developer.vonage.com/en/api/voice.v2"];
+//URL for voice-api & SMS overiew
+const startUrls1 = [
+  "https://developer.vonage.com/en/messaging/sms/overview",
+  "https://developer.vonage.com/en/messages/overview",
+  "https://developer.vonage.com/en/dispatch/overview",
+  "https://developer.vonage.com/en/meetings/overview",
+  "https://developer.vonage.com/en/client-sdk/in-app-messaging/overview",
+  "https://developer.vonage.com/en/client-sdk/in-app-voice/overview",
+  "https://developer.vonage.com/en/verify/overview",
+  "https://developer.vonage.com/en/number-insight/overview",
+  "https://developer.vonage.com/en/application/overview",
+  "https://developer.vonage.com/en/redact/overview",
+  "https://developer.vonage.com/en/numbers/overview",
+  "https://developer.vonage.com/en/reports/overview",
+  "https://developer.vonage.com/en/account/overview",
+  "https://developer.vonage.com/en/conversation/overview",
+  "https://developer.vonage.com/en/client-sdk/overview",
+  "https://developer.vonage.com/en/audit/overview",
+];
+const startUrls = ["https://developer.vonage.com/en/messaging/sms/overview"];
 
-const path = __dirname + "/docs/api-ref/";
+//URL for Voice API v2
+//const startUrls = ["https://developer.vonage.com/en/api/voice.v2"];
+
+//we only care about urls that start with this:
+const wallUrl = "https://developer.vonage.com/en";
+
+//Directory where we'll place the output files
+const path = __dirname + "/docs/text/";
 
 //For Guides
-// const xpath =
-//   '//*[@id="single-spa-application:en-dev-portal"]/div/div/div/div/div[2]';
+const xpath =
+  '//*[@id="single-spa-application:en-dev-portal"]/div/div/div/div/div[2]';
 
 //For API Reference Docs
-const xpath =
-     '//*[@id="single-spa-application:en-dev-portal"]/div/div/div/div[2]';
+// const xpath =
+//      '//*[@id="single-spa-application:en-dev-portal"]/div/div/div/div[2]';
 
 //This will save our history, so we don't process a page multiple times
 const history = [];
+
+//initialize logger
+const logger = winston.createLogger({
+  level: "debug",
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message, error }) => {
+      const errorMessage = error && error.stack ? `\n${error.stack}` : "";
+      return `[${timestamp}] ${level.toUpperCase()}: ${message}${errorMessage}`;
+    })
+  ),
+  transports: [
+    new winston.transports.File({ filename: "crawl.log" }),
+    new winston.transports.Console(),
+  ],
+});
+
+function log(level, message, error = null) {
+  logger.log({ level, message, error });
+}
 
 async function savePageAsText(url, page) {
   const textContent = await page.evaluate(() => {
@@ -23,62 +69,83 @@ async function savePageAsText(url, page) {
   });
 
   const fileName = url.replace(/https?:\/\/|\/|www\./g, "") + ".txt";
+
   fs.writeFileSync(path + fileName, textContent);
 }
 
 //Recursive function that crawls through all of the links on a page
 async function crawl(url, browser) {
-  console.log("Crawling:", url);
+  log("debug", `Crawling: ${url}`);
+  const pageRefsRegex = /^(.*?)#/;
 
   const page = await browser.newPage();
-  ``;
+
   await page.goto(url);
 
   //Wait until we see xpath...by then, the page will have loaded fully.
-  await page.waitForXPath(xpath);
+  try {
+    page.setDefaultTimeout(7000);
+    await page.waitForXPath(xpath);
+    // Get the page content
+    const content = await page.content();
 
-  // Get the page content
-  const content = await page.content();
+    // Extract all internal links from the page
+    const links = await page.$$eval("a[href]", (anchors) =>
+      anchors
+        .map((a) => a.href)
+        .filter((href) => href.startsWith("https://developer.vonage.com/en"))
+    );
 
-  // Extract all internal links from the page
-  const links = await page.$$eval("a[href]", (anchors) =>
-    anchors
-      .map((a) => a.href)
-      .filter((href) =>
-        href.startsWith("https://developer.vonage.com/en/api/voice")
-      )
-  );
+    //console.log(`Links in page: ${links}`);
 
-  console.log(`Links: ${links}`);
+    await savePageAsText(url, page);
 
-  await savePageAsText(url, page);
+    // Close the page
+    await page.close();
 
-  // Close the page
-  await page.close();
+    // Recursively crawl the extracted links
+    for (const link of links) {
+      //We hash each url and store them in history so we only process a page once.
+      let hash;
 
-  // Recursively crawl the extracted links
-  for (const link of links) {
-    //We hash each url and store them in history so we only process a page once.
-    const hash = getHash(link);
-    if (inHistory(hash)) {
-      console.log(`Already visited ${link}`);
-    } else {
-      let v = [];
-      v[0] = hash;
-      v[1] = link;
-      history.push(v);
+      //We don't need to crawl the page ref links
+      const match = link.match(pageRefsRegex);
 
-      await crawl(link, browser);
+      if (match) {
+        hash = getHash(match[1]);
+      } else {
+        hash = getHash(link);
+      }
+
+      if (inHistory(hash)) {
+        log("debug", `Already visited ${link}`);
+      } else {
+        addHistory(hash, link);
+        await crawl(link, browser);
+      }
     }
+  } catch (e) {
+    addHistory(getHash(url), url);
+    log("debug", `Error crawling ${url}`, e);
+    //console.log(e);
   }
 }
 
+function addHistory(hash, link) {
+  log("debug", `Adding ${link} to history list`);
+  let v = [];
+  v[0] = hash;
+  v[1] = link;
+  history.push(v);
+}
+
 (async () => {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({});
   for (const url of startUrls) {
     await crawl(url, browser);
   }
   await browser.close();
+  log("debug", "Links visited:", history);
 })();
 
 function inHistory(hash) {
@@ -87,9 +154,12 @@ function inHistory(hash) {
   }
 
   for (var i = 0; i < history.length; i++) {
-    console.log(`${history[i][0]} : ${hash}`);
+    //console.log(`${history[i][0]} : ${hash}`);
     if (history[i][0] === hash) {
-      console.log("Found");
+      // log(
+      //   "debug",
+      //   `Found ${history[i][1]} in history. Will not process again.`
+      // );
       return true;
     }
   }
@@ -97,6 +167,7 @@ function inHistory(hash) {
   return false;
 }
 
+//Simple hash function
 function getHash(s) {
   var a = 1,
     c = 0,
