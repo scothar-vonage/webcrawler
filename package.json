@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.0.3",
     "puppeteer": "^19.8.5",
     "turndown": "^7.1.2",
     "winston": "^3.8.2"
