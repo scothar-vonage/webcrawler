@@ -18,6 +18,7 @@ const xpath = process.env.XPATH;
 //This will save our history, so we don't process a page multiple times
 const history = [];
 
+//The length of time in milliseconds we'll wait for a page to load
 const pageTimeout = 5000;
 
 //initialize logger

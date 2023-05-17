@@ -21,3 +21,9 @@ Once you have configured the `.env` file, you can run the code:
 ```
 node crawler.js
 ```
+
+# Configuring Timeout
+By default, the scrip will wait 5 seconds to find the configured XPATH element. After the timeout expires, it will move on to the next link. You can change this timeout value in `crawler.js`:
+```
+const pageTimeout = 5000;
+```
