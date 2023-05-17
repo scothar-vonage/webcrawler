@@ -7,10 +7,10 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
-/docs/api-ref/
-/docs/html/
-/docs/markdown
-/docs/text
+docs/api-ref/*
+docs/html/*
+docs/markdown/*
+docs/text/*
 
 
 # Diagnostic reports (https://nodejs.org/api/report.html)

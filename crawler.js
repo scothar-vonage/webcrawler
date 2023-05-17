@@ -15,6 +15,8 @@ const path = __dirname + process.env.OUTPUT_PATH;
 
 const xpath = process.env.XPATH;
 
+const historyLog = "history.log";
+
 //This will save our history, so we don't process a page multiple times
 const history = [];
 
@@ -41,6 +43,23 @@ function log(level, message, error = null) {
   logger.log({ level, message, error });
 }
 
+// Read the file and convert its content to a 2-dimensional array
+function loadHistoryFromLog() {
+  if (!fs.existsSync(historyLog)) {
+    return;
+  }
+
+  const fileContent = fs.readFileSync(historyLog, "utf-8");
+  const lines = fileContent.split("\n");
+  return lines.map((line) => {
+    if (line === "") {
+      return;
+    }
+    const [hash, link] = line.split(",");
+    addHistory(hash, link, true);
+  });
+}
+
 async function savePageAsText(url, page) {
   const textContent = await page.evaluate(() => {
     return document.documentElement.innerText;
@@ -63,8 +82,6 @@ async function crawl(url, browser) {
   //Wait until we see xpath...by then, the page will have loaded fully.
   try {
     page.setDefaultTimeout(pageTimeout);
-
-    //page.on("console", (consoleObj) => console.log(consoleObj.text()));
 
     await page.waitForXPath(xpath);
 
@@ -111,24 +128,32 @@ async function crawl(url, browser) {
   }
 }
 
-function addHistory(hash, link) {
-  log("debug", `Adding ${link} to history list`);
+function addHistory(hash, link, skipSave = false) {
+  if (inHistory(hash)) {
+    return;
+  }
+
+  log("debug", `Adding ${hash}, ${link} to history list`);
   let v = [];
   v[0] = hash;
   v[1] = link;
   history.push(v);
-  writeHistoryToFile(hash, link);
+
+  if (!skipSave) {
+    writeHistoryToFile(hash, link);
+  }
 }
 
 (async () => {
   log("debug", `Starting crawler with ${startUrls.toString()}`);
   log("debug", `Wall URL: ${wallUrl}`);
   const browser = await puppeteer.launch({});
+  loadHistoryFromLog();
+  log("debug", `History has ${history.length} entries`);
   for (const url of startUrls) {
     await crawl(url, browser);
   }
   await browser.close();
-  log("debug", "Links visited:", history);
 })();
 
 function inHistory(hash) {
