@@ -1,47 +1,24 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const winston = require("winston");
+const dotenv = require("dotenv");
 
+dotenv.config();
 //URL for voice-api & SMS overiew
-const startUrls1 = [
-  "https://developer.vonage.com/en/messaging/sms/overview",
-  "https://developer.vonage.com/en/messages/overview",
-  "https://developer.vonage.com/en/dispatch/overview",
-  "https://developer.vonage.com/en/meetings/overview",
-  "https://developer.vonage.com/en/client-sdk/in-app-messaging/overview",
-  "https://developer.vonage.com/en/client-sdk/in-app-voice/overview",
-  "https://developer.vonage.com/en/verify/overview",
-  "https://developer.vonage.com/en/number-insight/overview",
-  "https://developer.vonage.com/en/application/overview",
-  "https://developer.vonage.com/en/redact/overview",
-  "https://developer.vonage.com/en/numbers/overview",
-  "https://developer.vonage.com/en/reports/overview",
-  "https://developer.vonage.com/en/account/overview",
-  "https://developer.vonage.com/en/conversation/overview",
-  "https://developer.vonage.com/en/client-sdk/overview",
-  "https://developer.vonage.com/en/audit/overview",
-];
-const startUrls = ["https://developer.vonage.com/en/messaging/sms/overview"];
-
-//URL for Voice API v2
-//const startUrls = ["https://developer.vonage.com/en/api/voice.v2"];
+const startUrls = process.env.START_URLS.split(",");
 
 //we only care about urls that start with this:
-const wallUrl = "https://developer.vonage.com/en";
+const wallUrl = process.env.WALL_URL;
 
 //Directory where we'll place the output files
-const path = __dirname + "/docs/text/";
+const path = __dirname + process.env.OUTPUT_PATH;
 
-//For Guides
-const xpath =
-  '//*[@id="single-spa-application:en-dev-portal"]/div/div/div/div/div[2]';
-
-//For API Reference Docs
-// const xpath =
-//      '//*[@id="single-spa-application:en-dev-portal"]/div/div/div/div[2]';
+const xpath = process.env.XPATH;
 
 //This will save our history, so we don't process a page multiple times
 const history = [];
+
+const pageTimeout = 5000;
 
 //initialize logger
 const logger = winston.createLogger({
@@ -84,27 +61,30 @@ async function crawl(url, browser) {
 
   //Wait until we see xpath...by then, the page will have loaded fully.
   try {
-    page.setDefaultTimeout(7000);
+    page.setDefaultTimeout(pageTimeout);
+
+    //page.on("console", (consoleObj) => console.log(consoleObj.text()));
+
     await page.waitForXPath(xpath);
+
     // Get the page content
     const content = await page.content();
 
-    // Extract all internal links from the page
-    const links = await page.$$eval("a[href]", (anchors) =>
-      anchors
-        .map((a) => a.href)
-        .filter((href) => href.startsWith("https://developer.vonage.com/en"))
+    const links = await page.$$eval(
+      "a[href]",
+      (anchors, wallUrl) =>
+        anchors.map((a) => a.href).filter((href) => href.startsWith(wallUrl)),
+      wallUrl
     );
-
-    //console.log(`Links in page: ${links}`);
-
     await savePageAsText(url, page);
 
     // Close the page
     await page.close();
+    addHistory(getHash(url), url);
 
     // Recursively crawl the extracted links
     for (const link of links) {
+      log("debug", `--->Found link: ${link}`);
       //We hash each url and store them in history so we only process a page once.
       let hash;
 
@@ -127,7 +107,6 @@ async function crawl(url, browser) {
   } catch (e) {
     addHistory(getHash(url), url);
     log("debug", `Error crawling ${url}`, e);
-    //console.log(e);
   }
 }
 
@@ -137,9 +116,12 @@ function addHistory(hash, link) {
   v[0] = hash;
   v[1] = link;
   history.push(v);
+  writeHistoryToFile(hash, link);
 }
 
 (async () => {
+  log("debug", `Starting crawler with ${startUrls.toString()}`);
+  log("debug", `Wall URL: ${wallUrl}`);
   const browser = await puppeteer.launch({});
   for (const url of startUrls) {
     await crawl(url, browser);
@@ -154,12 +136,7 @@ function inHistory(hash) {
   }
 
   for (var i = 0; i < history.length; i++) {
-    //console.log(`${history[i][0]} : ${hash}`);
     if (history[i][0] === hash) {
-      // log(
-      //   "debug",
-      //   `Found ${history[i][1]} in history. Will not process again.`
-      // );
       return true;
     }
   }
@@ -183,4 +160,14 @@ function getHash(s) {
     }
   }
   return String(a);
+}
+
+function writeHistoryToFile(hash, link) {
+  const formattedString = `${hash},${link}\n`;
+
+  fs.appendFile("history.log", formattedString, (e) => {
+    if (e) {
+      log("error", "Error writing history to log", e);
+    }
+  });
 }
